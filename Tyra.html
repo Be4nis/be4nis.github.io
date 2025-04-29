@@ -86,27 +86,42 @@
 <div class="hearts" id="hearts"></div>
 
 <script>
-  // Set total time in seconds (24 hours)
-  let totalSeconds = 24 * 60 * 60;
+  const TIMER_KEY = 'love_timer_start';
+  const TOTAL_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+  let startTime = localStorage.getItem(TIMER_KEY);
+
+  if (!startTime) {
+    // If no start time, set it now
+    startTime = Date.now();
+    localStorage.setItem(TIMER_KEY, startTime);
+  } else {
+    startTime = parseInt(startTime, 10);
+  }
 
   function updateTimer() {
+    const now = Date.now();
+    const elapsed = now - startTime;
+    const remaining = TOTAL_DURATION - elapsed;
+
+    if (remaining <= 0) {
+      document.getElementById('timer').textContent = "00:00:00";
+      clearInterval(timerInterval);
+      alert("Time's up!");
+      localStorage.removeItem(TIMER_KEY); // Reset timer
+      return;
+    }
+
+    const totalSeconds = Math.floor(remaining / 1000);
     let hours = Math.floor(totalSeconds / 3600);
     let minutes = Math.floor((totalSeconds % 3600) / 60);
     let seconds = totalSeconds % 60;
 
-    // Add leading zeros if needed
     hours = hours.toString().padStart(2, '0');
     minutes = minutes.toString().padStart(2, '0');
     seconds = seconds.toString().padStart(2, '0');
 
     document.getElementById('timer').textContent = `${hours}:${minutes}:${seconds}`;
-
-    if (totalSeconds > 0) {
-      totalSeconds--;
-    } else {
-      clearInterval(timerInterval);
-      alert("Time's up!");
-    }
   }
 
   const timerInterval = setInterval(updateTimer, 1000);
